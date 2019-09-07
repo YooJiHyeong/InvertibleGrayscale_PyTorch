@@ -29,6 +29,10 @@ def arg_parse():
     parser.add_argument('--save_dir', type=str, required=True,
                         help='Directory name to save the model')
 
+    # Input
+    parser.add_argument('--resl', type=tuple, default=(256, 256),
+                        help='Image resolution')
+
     # Training configuration
     parser.add_argument('--epoch', type=int, default=200, help='epochs')
 
@@ -66,7 +70,7 @@ if __name__ == "__main__":
 
     E = nn.DataParallel(Encoder(), output_device=device["output"]).to(device["model"])
     D = nn.DataParallel(Decoder(), output_device=device["output"]).to(device["model"])
-    loss = TotalLoss(device)
+    loss = TotalLoss(device, (arg.batch_train, *arg.resl))
     optim = torch.optim.Adam(list(E.parameters()) + list(D.parameters()), lr=arg.lr, betas=arg.betas)
 
     train_loader = Loader(train_path, arg.batch_train, num_workers=arg.cpus, shuffle=True, drop_last=True)

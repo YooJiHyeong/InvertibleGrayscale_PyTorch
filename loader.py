@@ -25,6 +25,9 @@ class CSVSet(data.Dataset):
     def __getitem__(self, idx):
         img = Image.open(self.items[idx])
         img = self.preprocess(img)
+
+        # TODO : normalization into preprocess
+        img = (img - img.min()) / (img.max() - img.min()) * 2 - 1
         return img
 
     def __len__(self):
@@ -35,7 +38,7 @@ def Loader(csv_path, batch_size, sampler=False, num_workers=1, shuffle=False, dr
     def _cycle(loader):
         while True:
             for element in loader:
-                yield loader
+                yield element
             random.shuffle(loader.dataset.items)
 
     dataset = CSVSet(csv_path)
