@@ -8,7 +8,7 @@ class Runner:
         self.loss = loss
         self.optim = optim
         self.train_loader = train_loader
-        self.test_loader = iter(next(test_loader))
+        self.test_loader = test_loader
 
         self.config = config
         self.device = device
@@ -27,7 +27,9 @@ class Runner:
                 # print(gray_img.max(), gray_img.min(), gray_img.mean())
                 restored_img = self.decoder(gray_img)
                 # print(restored_img.max(), restored_img.min(), restored_img.mean())
-                loss = self.loss(gray_img, original_img, restored_img)
+
+                loss_stage = 1 if epoch < 90 else 2
+                loss = self.loss(gray_img, original_img, restored_img, loss_stage)
 
                 self.optim.zero_grad()
                 loss.backward()
@@ -35,7 +37,7 @@ class Runner:
 
                 if i % 50 == 0:
                     print("[%03d/%03d] %d iter / Loss : %f" % (epoch, self.config["epoch"], i, loss))
-                    self.test((epoch + 1) * i)
+                    self.test(epoch * 1000 + i)
 
             print("=========== Epoch : %03d Finished ============" % epoch)
 

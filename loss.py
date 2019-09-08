@@ -63,7 +63,7 @@ class GrayscaleConformityLoss(nn.Module):
         l_loss = self.lightness(gray_img, original_img)
         c_loss = self.contrast(gray_img, original_img)
         ls_loss = self.local_structure(gray_img, original_img)
-        # print("\tlight", l_loss.item(), " / c_loss", self.c_weight, c_loss.item(), " / ls_loss", self.ls_weight, ls_loss.item())
+        # print("light :", l_loss.item(), " | contrast :", self.c_weight, c_loss.item(), " | local :", self.ls_weight, ls_loss.item())
         return l_loss + (self.c_weight * c_loss) + (self.ls_weight * ls_loss)
 
 
@@ -75,7 +75,7 @@ class QuantizationLoss(nn.Module):
         min_tensor = torch.zeros_like(gray_img).fill_(1)   # fill with maximum value (larger than 255)
 
         for i in range(0, 256):
-            min_tensor = torch.min(min_tensor, torch.abs(gray_img - i / 127.5))
+            min_tensor = torch.min(min_tensor, torch.abs(gray_img - (i / 127.5 - 1)))
 
         loss = torch.norm(min_tensor, p=1)
         return loss
@@ -89,10 +89,15 @@ class TotalLoss(nn.Module):
         self.g_loss = GrayscaleConformityLoss(device, img_shape, threshold, vgg_layer_idx, c_weight, ls_weight)
         self.q_loss = QuantizationLoss()
 
-    def forward(self, gray_img, original_img, restored_img):
+    def forward(self, gray_img, original_img, restored_img, loss_stage):
         i_loss = self.i_loss(original_img, restored_img)
         g_loss = self.g_loss(gray_img, original_img)
-        q_loss = self.q_loss(gray_img)
+
+        if loss_stage == 1:
+            q_loss = 0
+        elif loss_stage == 2:
+            q_loss = self.q_loss(gray_img)
+
         total_loss = i_loss + g_loss + q_loss
-        # print("total", total_loss.item(), i_loss.item(), g_loss.item(), q_loss.item())
+        print("Total %4f | Invert %4f | Gray %4f | Quant %4f" % (total_loss.item(), i_loss.item(), g_loss.item(), float(q_loss)))
         return total_loss

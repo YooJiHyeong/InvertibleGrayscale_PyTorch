@@ -5,6 +5,7 @@ import argparse
 
 import torch
 import torch.nn as nn
+import torch.optim as opt
 torch.backends.cudnn.benchmark = True
 
 from loader import Loader
@@ -34,7 +35,7 @@ def arg_parse():
                         help='Image resolution')
 
     # Training configuration
-    parser.add_argument('--epoch', type=int, default=200, help='epochs')
+    parser.add_argument('--epoch', type=int, default=120, help='epochs')
 
     parser.add_argument('--batch_train', type=int, default=12, help='size of batch for train')
     parser.add_argument('--batch_test',  type=int, default=1, help='size of batch for test (and validation also)')
@@ -70,8 +71,11 @@ if __name__ == "__main__":
 
     E = nn.DataParallel(Encoder(), output_device=device["output"]).to(device["model"])
     D = nn.DataParallel(Decoder(), output_device=device["output"]).to(device["model"])
+
     loss = TotalLoss(device, (arg.batch_train, *arg.resl))
-    optim = torch.optim.Adam(list(E.parameters()) + list(D.parameters()), lr=arg.lr, betas=arg.betas)
+
+    optim = opt.Adam(list(E.parameters()) + list(D.parameters()), lr=arg.lr, betas=arg.betas)
+    scheduler = opt.lr_scheduler.LambdaLR(optim, lr_lambda=lambda epoch: 0.965 ** epoch)
 
     train_loader = Loader(train_path, arg.batch_train, num_workers=arg.cpus, shuffle=True, drop_last=True)
     test_loader  = Loader(test_path,  arg.batch_test,  num_workers=arg.cpus, shuffle=True, drop_last=True, cycle=True)
