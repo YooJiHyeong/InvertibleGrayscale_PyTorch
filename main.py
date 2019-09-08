@@ -57,8 +57,9 @@ if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = arg.gpus
 
     device = {
-        "model":  torch.device(0),
-        "output": torch.device(0)
+        "network": torch.device(0),
+        "images" : torch.device(2),
+        "test"   : torch.device(4)
     }
 
     csv_path  = "../VOC2012/"
@@ -69,8 +70,8 @@ if __name__ == "__main__":
     os.makedirs(arg.save_dir, exist_ok=True)
     tensorboard = utils.TensorboardLogger("%s/tb"%(arg.save_dir))
 
-    E = nn.DataParallel(Encoder(), output_device=device["output"]).to(device["model"])
-    D = nn.DataParallel(Decoder(), output_device=device["output"]).to(device["model"])
+    E = nn.DataParallel(Encoder(), output_device=device["images"]).to(device["network"])
+    D = nn.DataParallel(Decoder(), output_device=device["images"]).to(device["network"])
 
     loss = TotalLoss(device, (arg.batch_train, *arg.resl))
 
