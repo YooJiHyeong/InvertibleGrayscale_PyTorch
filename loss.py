@@ -38,8 +38,9 @@ class GrayscaleConformityLoss(nn.Module):
         return loss
 
     def contrast(self, gray_img, original_img):
-        vgg_g = self.vgg(gray_img.repeat(1, 3, 1, 1))
-        vgg_o = self.vgg(original_img)
+        with torch.no_grad():
+            vgg_g = self.vgg(gray_img.repeat(1, 3, 1, 1))
+            vgg_o = self.vgg(original_img)
         return self.l1_loss(vgg_g, vgg_o)
 
     def local_structure(self, gray_img, original_img):

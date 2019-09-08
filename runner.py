@@ -42,11 +42,12 @@ class Runner:
             print("=========== Epoch : %03d Finished ============" % epoch)
 
     def test(self, epoch):
-        original_img = next(self.test_loader).to(self.device["output"])
+        with torch.no_grad()
+            original_img = next(self.test_loader).to(self.device["output"])
 
-        if self.fixed_test:
-            original_img = torch.cat([self.fixed_input, original_img], 0)
+            if self.fixed_test:
+                original_img = torch.cat([self.fixed_input, original_img], 0)
 
-        gray_img = self.encoder(original_img)
-        restored_img = self.decoder(gray_img)
-        self.tensorboard.log_image(original_img, gray_img, restored_img, epoch)
+            gray_img = self.encoder(original_img)
+            restored_img = self.decoder(gray_img)
+            self.tensorboard.log_image(original_img, gray_img, restored_img, epoch)
