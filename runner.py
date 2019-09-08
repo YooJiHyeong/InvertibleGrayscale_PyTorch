@@ -16,12 +16,12 @@ class Runner:
         self.fixed_test = fixed_test
 
         if self.fixed_test:
-            self.fixed_input = next(self.test_loader).to(self.device["output"])
+            self.fixed_input = next(self.test_loader).to(self.device["test"])
 
     def train(self):
         for epoch in range(self.config["epoch"]):
             for i, original_img in enumerate(self.train_loader):
-                original_img = original_img.to(self.device["output"])
+                original_img = original_img.to(self.device["images"])
                 # print(original_img.max(), original_img.min(), original_img.mean())
                 gray_img = self.encoder(original_img)
                 # print(gray_img.max(), gray_img.min(), gray_img.mean())
@@ -42,7 +42,7 @@ class Runner:
             print("=========== Epoch : %03d Finished ============" % epoch)
 
     def test(self, epoch):
-        original_img = next(self.test_loader).to(self.device["output"])
+        original_img = next(self.test_loader).to(self.device["test"])
 
         if self.fixed_test:
             original_img = torch.cat([self.fixed_input, original_img], 0)

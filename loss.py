@@ -18,13 +18,13 @@ class GrayscaleConformityLoss(nn.Module):
         super().__init__()
 
         self.threshold = threshold
-        self.vgg = vgg19(pretrained=True).features[:vgg_layer_idx].to(device["model"])      # if [:26], forward by conv4_4
+        self.vgg = nn.DataParallel(vgg19(pretrained=True).features[:vgg_layer_idx], output_device=device["images"]).to(device["network"])      # if [:26], forward by conv4_4
         self.l1_loss = nn.L1Loss()
 
         self.c_weight = c_weight
         self.ls_weight = ls_weight
 
-        self.zeros = torch.zeros(img_shape).to(device["output"])
+        self.zeros = torch.zeros(img_shape).to(device["images"])
 
     def lightness(self, gray_img, original_img):
 
@@ -38,8 +38,9 @@ class GrayscaleConformityLoss(nn.Module):
         return loss
 
     def contrast(self, gray_img, original_img):
-        vgg_g = self.vgg(gray_img.repeat(1, 3, 1, 1))
-        vgg_o = self.vgg(original_img)
+        with torch.no_grad():
+            vgg_g = self.vgg(gray_img.repeat(1, 3, 1, 1))
+            vgg_o = self.vgg(original_img)
         return self.l1_loss(vgg_g, vgg_o)
 
     def local_structure(self, gray_img, original_img):
