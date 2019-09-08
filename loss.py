@@ -94,10 +94,12 @@ class TotalLoss(nn.Module):
         g_loss = self.g_loss(gray_img, original_img)
 
         if loss_stage == 1:
+            g_weight = 1
             q_loss = 0
         elif loss_stage == 2:
-            q_loss = self.q_loss(gray_img)
+            g_weight = 0.5
+            q_loss = self.q_loss(gray_img) * 10
 
-        total_loss = i_loss + g_loss + q_loss
+        total_loss = i_loss + (g_loss * g_weight) + q_loss
         print("Total %4f | Invert %4f | Gray %4f | Quant %4f" % (total_loss.item(), i_loss.item(), g_loss.item(), float(q_loss)))
         return total_loss
