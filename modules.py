@@ -23,7 +23,8 @@ class UpConv(nn.Module):
 
         self.layers = nn.Sequential(
             nn.Upsample(scale_factor=2),
-            nn.Conv2d(in_ch, out_ch, 3, 1, 1),
+            nn.Conv2d(in_ch,  out_ch, 3, 1, 1),
+            nn.Conv2d(out_ch, out_ch, 3, 1, 1),
             nn.ReLU(True)
         )
 
@@ -39,23 +40,6 @@ class DownConv(nn.Module):
             nn.Conv2d(in_ch,  out_ch, 3, 2, 1),
             nn.Conv2d(out_ch, out_ch, 3, 1, 1),
             nn.ReLU(True)
-        )
-
-    def forward(self, x):
-        return self.layers(x)
-
-
-class FlatConv(nn.Module):
-    def __init__(self, in_ch, out_ch, act_fn):
-        super().__init__()
-
-        if act_fn == "relu":
-            act = nn.ReLU(True)
-        elif act_fn == "tanh":
-            act = nn.Tanh()
-        self.layers = nn.Sequential(
-            nn.Conv2d(in_ch, out_ch, 3, 1, 1),
-            act
         )
 
     def forward(self, x):

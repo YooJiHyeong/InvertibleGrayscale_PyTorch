@@ -1,5 +1,5 @@
 import torch.nn as nn
-from modules import FlatConv, ResidualBlock, UpConv, DownConv
+from modules import ResidualBlock, UpConv, DownConv
 
 
 class Encoder(nn.Module):
@@ -7,7 +7,7 @@ class Encoder(nn.Module):
         super().__init__()
 
         self.head = nn.Sequential(
-            FlatConv(3, 64, "relu"),
+            nn.Conv2d(3, 64, 3, 1, 1),
             ResidualBlock(64),
             ResidualBlock(64),
         )
@@ -32,7 +32,8 @@ class Encoder(nn.Module):
         self.tail = nn.Sequential(
             ResidualBlock(64),
             ResidualBlock(64),
-            FlatConv(64, 1, "tanh")
+            nn.Conv2d(64, 1, 3, 1, 1),
+            nn.Tanh()
         )
 
     def forward(self, x):
@@ -68,7 +69,9 @@ class Decoder(nn.Module):
             ResidualBlock(64),
             ResidualBlock(64),
             ResidualBlock(64),
-            FlatConv(64, 3, 'tanh')
+            nn.Conv2d(64, 256, 3, 1, 1),
+            nn.Conv2d(256, 3, 1, 1, 0),
+            nn.Tanh()
         )
 
     def forward(self, x):

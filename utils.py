@@ -19,6 +19,7 @@ class TensorboardLogger(SummaryWriter):
     def log_image(self, original_img, gray_img, restored_img, epoch, plot_name="Plot"):
         def _normalize(img):
             return (img + 1) / 2
+        # imgs = [_normalize(img) for img in [original_img, gray_img, restored_img]]
         imgs = [_normalize(img) for img in [original_img, gray_img.repeat(1, 3, 1, 1), restored_img]]
         imgs = torch.cat(imgs, 3)
         imgs = torchvision.utils.make_grid(imgs, nrow=1)

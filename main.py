@@ -58,8 +58,8 @@ if __name__ == "__main__":
 
     device = {
         "network": torch.device(0),
-        "images" : torch.device(2),
-        "test"   : torch.device(4)
+        "images" : torch.device(1),
+        "test"   : torch.device(2)
     }
 
     csv_path  = "../VOC2012/"
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     E = nn.DataParallel(Encoder(), output_device=device["images"]).to(device["network"])
     D = nn.DataParallel(Decoder(), output_device=device["images"]).to(device["network"])
 
-    loss = TotalLoss(device, (arg.batch_train, *arg.resl))
+    loss = TotalLoss(device, (arg.batch_train, 3, *arg.resl))
 
     optim = opt.Adam(list(E.parameters()) + list(D.parameters()), lr=arg.lr, betas=arg.betas)
     scheduler = opt.lr_scheduler.LambdaLR(optim, lr_lambda=lambda epoch: 0.965 ** epoch)
@@ -83,5 +83,5 @@ if __name__ == "__main__":
 
     runner_config = {"epoch": arg.epoch}
 
-    model = Runner(E, D, loss, optim, train_loader, test_loader, runner_config, device, tensorboard)
+    model = Runner(E, D, loss, optim, scheduler, train_loader, test_loader, runner_config, device, tensorboard)
     model.train()
